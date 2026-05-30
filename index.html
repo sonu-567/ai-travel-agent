@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Agent</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            background: #f4f6f9;
+            padding: 20px;
+            transition: 0.3s;
+        }
+        
+        .dark {
+            background: #121212;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .dark .card {
+            background: #1f1f1f;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        input,
+        select,
+        button {
+            padding: 12px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        button {
+            background: #0077ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background: #eef5ff;
+        }
+        
+        .dark .result {
+            background: #2d2d2d;
+        }
+        
+        .history-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        
+        .dark .history-item {
+            background: #333;
+        }
+        
+        .top-btns {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>🌍 AI Travel Agent</h1>
+
+        <div class="top-btns">
+            <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+            <button onclick="startVoice()">🎤 Voice Input</button>
+        </div>
+
+        <div class="card">
+            <div class="grid">
+
+                <input type="text" id="source" placeholder="Source City">
+
+                <input type="text" id="destination" placeholder="Destination City">
+
+                <input type="date" id="startDate">
+
+                <input type="date" id="endDate">
+
+                <input type="number" id="travelers" placeholder="Travelers">
+
+                <input type="number" id="budget" placeholder="Budget ₹">
+
+                <select id="travelType">
+<option>Solo</option>
+<option>Family</option>
+<option>Friends</option>
+<option>Couple</option>
+</select>
+
+                <button onclick="generatePlan()">Generate AI Plan</button>
+
+            </div>
+
+            <div id="result" class="result"></div>
+        </div>
+
+        <div class="card">
+            <h2>📜 Trip History</h2>
+            <div id="history"></div>
+        </div>
+
+    </div>
+
+    <script>
+        loadHistory();
+
+        function generatePlan() {
+
+            let source = document.getElementById("source").value;
+            let destination = document.getElementById("destination").value;
+            let start = document.getElementById("startDate").value;
+            let end = document.getElementById("endDate").value;
+            let travelers = Number(document.getElementById("travelers").value);
+            let budget = Number(document.getElementById("budget").value);
+            let type = document.getElementById("travelType").value;
+
+            if (!source || !destination) {
+                alert("Please enter source and destination");
+                return;
+            }
+
+            let transport = "Train";
+            let hotel = "Budget Hotel";
+
+            if (budget > 30000) {
+                transport = "Flight";
+                hotel = "4-Star Hotel";
+            }
+
+            if (budget > 60000) {
+                hotel = "5-Star Luxury Hotel";
+            }
+
+            let attractions = [
+                "City Museum",
+                "Famous Temple",
+                "Adventure Park",
+                "Local Market",
+                "Nature Point"
+            ];
+
+            let perPerson = Math.floor(budget / (travelers || 1));
+
+            let plan = `
+<h2>✈ AI Travel Plan</h2>
+
+<p><b>From:</b> ${source}</p>
+<p><b>To:</b> ${destination}</p>
+<p><b>Travel Type:</b> ${type}</p>
+<p><b>Travelers:</b> ${travelers}</p>
+<p><b>Budget:</b> ₹${budget}</p>
+
+<p><b>Start Date:</b> ${start}</p>
+<p><b>End Date:</b> ${end}</p>
+
+<hr>
+
+<h3>🚆 Recommended Transport</h3>
+<p>${transport}</p>
+
+<h3>🏨 Suggested Hotel</h3>
+<p>${hotel}</p>
+
+<h3>💰 Budget Per Person</h3>
+<p>₹${perPerson}</p>
+
+<h3>📍 Tourist Attractions</h3>
+<ul>
+${attractions.map(a=>`<li>${a}</li>`).join("")}
+</ul>
+
+<h3>🍴 Food Suggestions</h3>
+<ul>
+<li>Local Special Dish</li>
+<li>Street Food Tour</li>
+<li>Traditional Cuisine</li>
+</ul>
+
+<h3>📝 Travel Tips</h3>
+<ul>
+<li>Carry ID Proof</li>
+<li>Book Hotels Early</li>
+<li>Keep Emergency Contacts</li>
+<li>Check Weather Forecast</li>
+</ul>
+`;
+
+document.getElementById("result").innerHTML=plan;
+
+saveHistory({
+source,
+destination,
+budget
+});
+
+}
+
+function saveHistory(data){
+
+let trips=
+JSON.parse(localStorage.getItem("trips"))||[];
+
+trips.push(data);
+
+localStorage.setItem(
+"trips",
+JSON.stringify(trips)
+);
+
+loadHistory();
+}
+
+function loadHistory(){
+
+let trips=
+JSON.parse(localStorage.getItem("trips"))||[];
+
+let html="";
+
+trips.reverse().forEach(t=>{
+html+=`
+<div class="history-item">
+${t.source} ➜ ${t.destination}
+(₹${t.budget})
+</div>
+`;
+});
+
+document.getElementById("history").innerHTML=html;
+}
+
+function toggleDarkMode(){
+document.body.classList.toggle("dark");
+}
+
+function startVoice(){
+
+if(!('webkitSpeechRecognition' in window)){
+alert("Voice recognition not supported");
+return;
+}
+
+const recognition=
+new webkitSpeechRecognition();
+
+recognition.lang="en-US";
+
+recognition.onresult=function(event){
+
+let text=
+event.results[0][0].transcript;
+
+document.getElementById("destination").value=text;
+};
+
+recognition.start();
+}
+    </script>
+
+</body>
+
+</html>
